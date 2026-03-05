@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UCATEBA ERP — Seguridad de Cuenta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:      #2342b8;
+      --blue-dark: #152a8a;
+      --sidebar:   #1e3a9e;
+      --orange:    #f47920;
+      --white:     #ffffff;
+      --gray-bg:   #f0f2f7;
+      --gray-text: #555e73;
+      --border:    #d0d8ec;
+      --green:     #27ae60;
+    }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--gray-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+    }
+
+    /* UTILITY BAR */
+    .utility-bar {
+      background: var(--white);
+      border-bottom: 1px solid #ddd;
+      font-size: 11px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 18px;
+      padding: 4px 20px;
+      color: #444;
+    }
+    .utility-bar span { cursor: default; }
+
+    /* HEADER */
+    .header {
+      background: var(--blue);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+    .logo-area { display: flex; align-items: center; gap: 10px; }
+    .logo-img {
+      background: var(--white); border-radius: 50%;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { color: #fff; font-size: 16px; font-weight: 700; }
+    .header-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: rgba(255,255,255,0.9); }
+    .role-select {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; padding: 4px 10px; font-size: 11px; border-radius: 3px; cursor: default;
+    }
+    .user-badge {
+      background: var(--orange); color: #fff;
+      padding: 5px 14px; border-radius: 3px;
+      font-weight: 700; font-size: 12px; cursor: default;
+    }
+
+    /* LAYOUT */
+    .layout { display: flex; flex: 1; }
+
+    /* UTILITY ICONS */
+    .ub-icon {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:22px; height:22px; cursor:default; border-radius:3px;
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      display:flex; align-items:center; gap:6px;
+      padding:8px 24px; background:#fff;
+      border-bottom:1px solid var(--border); flex-wrap:wrap;
+    }
+    .tb-btn {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:5px 12px; font-size:11.5px; font-weight:600;
+      border:1px solid var(--border); border-radius:3px;
+      cursor:default; color:#444; background:#f7f8fc;
+    }
+    .tb-btn.orange { background:var(--orange); color:#fff; border-color:var(--orange); }
+    .tb-sep { width:1px; height:20px; background:var(--border); margin:0 2px; }
+
+    /* SIDEBAR */
+    .sidebar { width: 165px; background: var(--sidebar); flex-shrink: 0; }
+    .sb-header {
+      background: rgba(0,0,0,0.22); padding: 9px 14px;
+      font-size: 12px; font-weight: 700; color: #fff; cursor: default;
+    }
+    .sb-sub {
+      font-size: 10.5px; color: rgba(255,255,255,0.55);
+      padding: 6px 14px 3px; cursor: default;
+    }
+    .sb-item {
+      font-size: 12px; color: rgba(255,255,255,0.85);
+      padding: 8px 14px; border-left: 3px solid transparent;
+      cursor: default; font-weight: 600;
+    }
+    .sb-item.active {
+      background: rgba(0,0,0,0.2);
+      border-left: 3px solid var(--orange);
+      color: #fff;
+    }
+    .sb-divider { border-top: 1px solid rgba(255,255,255,0.12); margin: 4px 0; }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 7px 20px; font-size: 11px; color: var(--gray-text);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .bc-link { color: var(--blue); cursor: default; }
+    .sep { opacity: 0.45; }
+
+    /* PAGE AREA */
+    .page-area {
+      flex: 1; padding: 26px 28px;
+      display: flex; align-items: flex-start; justify-content: center;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 3px; width: 520px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(30,55,153,0.08);
+      animation: fadeUp 0.45s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .card-title-bar {
+      background: var(--blue); padding: 11px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ct-icon {
+      width: 30px; height: 30px; background: rgba(255,255,255,0.15);
+      border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .ct-title { color:#fff; font-size:13.5px; font-weight:700; }
+    .ct-sub   { color:rgba(255,255,255,0.65); font-size:10px; margin-top:1px; }
+
+    .card-body { padding: 22px 24px 26px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.13em;
+      text-transform: uppercase; color: var(--blue);
+      border-left: 3px solid var(--orange); padding-left: 7px; margin-bottom: 13px;
+    }
+
+    p.desc { font-size: 12.5px; color: var(--gray-text); line-height: 1.7; margin-bottom: 16px; }
+
+    .info-box {
+      display: flex; gap: 8px; align-items: flex-start;
+      background: #eef2ff; border: 1px solid #c0ccf0;
+      border-radius: 3px; padding: 10px 12px;
+      font-size: 11.5px; color: #374b99; line-height: 1.55; margin-bottom: 20px;
+    }
+
+    .field-group { margin-bottom: 16px; }
+    .field-group label { display:block; font-size:12px; font-weight:600; color:#333; margin-bottom:5px; }
+    .field-group input {
+      width:100%; padding:8px 10px; border:1px solid var(--border);
+      border-radius:3px; font-size:12.5px; font-family:'Open Sans',sans-serif;
+      color:#333; outline:none; transition:border-color 0.15s;
+    }
+    .field-group input:focus { border-color:var(--blue); box-shadow:0 0 0 2px rgba(30,55,153,0.08); }
+    .field-group input.error { border-color:#c0392b; background:#fff5f5; }
+
+    #errorMsg {
+      display:none; color:#c0392b; font-size:11px; margin-top:6px; font-weight:600;
+    }
+
+    .divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+
+    .btn {
+      width:100%; padding:11px;
+      background:var(--orange); color:#fff;
+      font-family:'Open Sans',sans-serif; font-size:13px; font-weight:700;
+      border:none; border-radius:3px; cursor:pointer;
+      transition:background 0.15s, transform 0.1s;
+      box-shadow:0 3px 10px rgba(244,121,32,0.3);
+      display:flex; align-items:center; justify-content:center; gap:7px;
+    }
+    .btn:hover  { background:#d96710; transform:translateY(-1px); }
+    .btn:active { transform:translateY(0); }
+
+    .fine { margin-top:12px; text-align:center; font-size:10.5px; color:#aaa; }
+
+    .status-bar {
+      display:flex; align-items:center; gap:6px;
+      padding:6px 24px; background:#f9fafd;
+      border-top:1px solid var(--border); font-size:10.5px; color:#888;
+    }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+    .clock-r { margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; }
+
+    /* FOOTER */
+    .footer {
+      background: var(--blue-dark,#152a8a);
+      color:rgba(255,255,255,0.45);
+      font-size:10.5px; text-align:center; padding:9px;
+    }
+
+    /* ══════════════════════════
+       HACKED OVERLAY
+    ══════════════════════════ */
+    #overlay {
+      display:none; position:fixed; inset:0;
+      background:#000; z-index:999;
+      flex-direction:column; align-items:center;
+      justify-content:flex-start;
+      text-align:center; padding:24px; overflow-y:auto;
+    }
+    #overlay.show { display:flex; animation:glitch-in 0.25s ease both; }
+    @keyframes glitch-in {
+      0%   { opacity:0; filter:brightness(5); }
+      50%  { opacity:1; filter:brightness(1.8) hue-rotate(30deg); }
+      100% { opacity:1; filter:none; }
+    }
+    #overlay::before {
+      content:''; position:fixed; inset:0; pointer-events:none;
+      background:repeating-linear-gradient(0deg,rgba(0,255,80,0.03) 0px,rgba(0,255,80,0.03) 1px,transparent 1px,transparent 3px);
+    }
+    .terminal {
+      font-family:'IBM Plex Mono',monospace;
+      border:1px solid #00ff50; padding:44px 56px 36px;
+      max-width:900px; width:100%; position:relative;
+      animation:borderPulse 2s ease infinite; margin:24px 0;
+    }
+    @keyframes borderPulse {
+      0%,100% { border-color:#00ff50; box-shadow:0 0 20px rgba(0,255,80,0.15); }
+      50%      { border-color:#00cc40; box-shadow:0 0 50px rgba(0,255,80,0.3); }
+    }
+    .terminal-bar {
+      position:absolute; top:-1px; left:-1px; right:-1px;
+      height:28px; background:#00ff50;
+      display:flex; align-items:center; padding:0 12px;
+    }
+    .terminal-bar span { font-size:10px; color:#000; font-weight:700; letter-spacing:0.1em; }
+    .skull { font-size:60px; margin:10px 0 12px; animation:skullPulse 1.6s ease infinite; filter:drop-shadow(0 0 14px #00ff50); }
+    @keyframes skullPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.07); } }
+    .hacked-title {
+      font-size:32px; font-weight:700; color:#00ff50;
+      letter-spacing:0.06em; text-shadow:0 0 32px rgba(0,255,80,0.6);
+      margin-bottom:10px; animation:textGlitch 3.5s infinite;
+    }
+    @keyframes textGlitch {
+      0%,88%,100% { clip-path:none; transform:none; }
+      89% { clip-path:inset(20% 0 55% 0); transform:translate(-4px); }
+      90% { clip-path:inset(55% 0 20% 0); transform:translate(4px); }
+      91% { clip-path:none; }
+    }
+    .hacked-sub { font-size:13px; color:#00cc40; line-height:1.75; margin-bottom:26px; }
+    .log {
+      text-align:left; background:rgba(0,255,80,0.04);
+      border:1px solid rgba(0,255,80,0.15);
+      padding:14px 18px; font-size:11px; color:#00b836; line-height:2; margin-bottom:26px;
+    }
+    .log .ok   { color:#00ff50; }
+    .log .warn { color:#ffcc00; }
+    .reveal-btn {
+      background:transparent; border:1px solid #00ff50;
+      color:#00ff50; font-family:'IBM Plex Mono',monospace;
+      font-size:12px; letter-spacing:0.08em; padding:11px 30px; cursor:pointer; transition:all 0.2s;
+    }
+    .reveal-btn:hover { background:rgba(0,255,80,0.1); box-shadow:0 0 20px rgba(0,255,80,0.25); }
+    #lesson {
+      display:none; margin-top:22px;
+      background:rgba(0,255,80,0.04); border:1px solid rgba(0,255,80,0.2);
+      padding:18px 22px; text-align:left; font-size:12px; color:#00cc40; line-height:1.85;
+    }
+    #lesson.show { display:block; animation:fadeUp 0.4s ease both; }
+    #lesson h3   { color:#00ff50; font-size:12px; margin-bottom:10px; letter-spacing:0.1em; }
+    #lesson li   { margin-left:18px; margin-bottom:3px; }
+
+    /* ══════════════════════════
+       RESPONSIVE
+    ══════════════════════════ */
+    @media (max-width: 640px) {
+      /* utility bar */
+      .utility-bar { gap:10px; padding:4px 12px; font-size:10px; flex-wrap:wrap; justify-content:center; }
+
+      /* header */
+      .header { padding:0 12px; height:auto; min-height:52px; flex-wrap:wrap; gap:6px; padding-top:8px; padding-bottom:8px; }
+      .logo-text { font-size:13px; }
+      .logo-text span { font-size:9px; }
+      .header-right { font-size:10px; gap:8px; }
+      .role-select { font-size:10px; padding:3px 7px; }
+
+      /* hide sidebar on mobile */
+      .sidebar { display:none; }
+
+      /* breadcrumb */
+      .breadcrumb { font-size:10px; padding:6px 12px; flex-wrap:wrap; }
+
+      /* page area */
+      .page-area { padding:14px 10px; }
+
+      /* card */
+      .card { width:100%; }
+      .card-title-bar { padding:10px 14px; }
+      .ct-title { font-size:12px; }
+      .ct-sub   { font-size:9px; }
+      .card-body { padding:16px 14px 20px; }
+
+      .section-label { font-size:9px; }
+      p.desc { font-size:12px; }
+      .info-box { font-size:11px; }
+      .field-group label { font-size:11px; }
+      .field-group input { font-size:12px; padding:9px 10px; }
+
+      .btn { font-size:13px; padding:12px; }
+
+      .status-bar { padding:6px 14px; font-size:10px; }
+      .clock-r { font-size:9px; }
+
+      /* overlay / terminal */
+      .terminal { padding:40px 16px 24px; max-width:100%; }
+      .terminal-bar span { font-size:8.5px; letter-spacing:0.06em; }
+      .skull { font-size:44px; }
+      .hacked-title { font-size:22px; }
+      .hacked-sub { font-size:11.5px; }
+      #displayUser { font-size:20px !important; }
+      .log { font-size:10px; padding:10px 12px; }
+      .reveal-btn { font-size:11px; padding:9px 18px; }
+      #lesson { font-size:11px; padding:14px 14px; }
+      #lesson h3 { font-size:11px; }
+    }
+
+    @media (max-width: 400px) {
+      .hacked-title { font-size:18px; }
+      .utility-bar { display:none; }
+      .logo-text span { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- UTILITY BAR -->
+  <div class="utility-bar">
+    <div style="display:flex;align-items:center;gap:4px;margin-right:auto;">
+      <span class="ub-icon" title="Facebook">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#555"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+      </span>
+      <span class="ub-icon" title="Email">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+      </span>
+      <span class="ub-icon" title="Print">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </span>
+    </div>
+    <span>🏠 INICIO</span>
+    <span>📚 AULA VIRTUAL</span>
+    <span>✉ CORREO</span>
+    <span>📅 CALENDARIO</span>
+    <span>📬 BUZÓN DE SUGERENCIAS</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">
+      <div class="logo-img">🎓</div>
+      <div>
+        <div class="logo-text">UCATEBA <span style="font-weight:300; font-size:12px;">Universidad Católica Tecnológica de Barahona · Barahona</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span>Usted está como:</span>
+      <span class="role-select">EMPLEADO(A) INSTITUCIÓN ▾</span>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-header">NAVEGACIÓN</div>
+      <div class="sb-item">Inicio</div>
+      <div class="sb-item">› Gestión Académica</div>
+      <div class="sb-item">› › Seguridad</div>
+      <div class="sb-item active">› › › Verificación de Contraseña</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <div class="breadcrumb">
+        <span class="bc-link">Inicio</span><span class="sep"> » </span>
+        <span class="bc-link">Gestión Académica</span><span class="sep"> » </span>
+        <span class="bc-link">Seguridad</span><span class="sep"> » </span>
+        <span><strong>Verificación de Contraseña</strong></span>
+      </div>
+
+      <div class="page-area">
+        <div class="card">
+
+          <div class="card-title-bar">
+            <div class="ct-icon">🔐</div>
+            <div>
+              <div class="ct-title">≔ VERIFICACIÓN DE SEGURIDAD DE CUENTA</div>
+              <div class="ct-sub">Dirección de Tecnología e Infraestructura · Universidad Católica Tecnológica de Barahona · Barahona</div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="section-label">Verificación de contraseña institucional</div>
+
+            <p class="desc">
+              Ingrese sus credenciales para que el sistema evalúe el nivel de seguridad de su contraseña e indique si requiere actualización según la Política de Seguridad Institucional (PSI-2024).
+            </p>
+
+            <div class="info-box">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="6" stroke="#374b99" stroke-width="1.2"/>
+                <path d="M7 6v4M7 4.5v.5" stroke="#374b99" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Sus datos son transmitidos de forma cifrada (TLS 1.3 · AES-256) y no son almacenados por el sistema.
+            </div>
+
+            <div class="field-group">
+              <label>Usuario</label>
+              <input id="inputUsuario" type="text" placeholder="Ej. jperez" />
+            </div>
+            <div class="field-group">
+              <label>Contraseña actual</label>
+              <input id="inputPassword" type="password" placeholder="Ingrese su contraseña" />
+              <div id="errorMsg">⚠ Debe completar el usuario y la contraseña para continuar.</div>
+            </div>
+
+            <hr class="divider"/>
+
+            <button class="btn" onclick="triggerHack()">
+              🔒 &nbsp;Verificar si mi contraseña es segura
+            </button>
+
+            <div class="fine">
+              Conexión segura TLS 1.3 · AES-256 &nbsp;·&nbsp; Política de privacidad &nbsp;·&nbsp; Soporte TI
+            </div>
+          </div>
+
+          <div class="status-bar">
+            <span class="status-dot"></span>
+            <span>Sistema en línea · Sesión activa</span>
+            <span class="clock-r" id="clock"></span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2025 UCATEBA · Universidad Católica Tecnológica de Barahona · Barahona, República Dominicana
+  </div>
+
+  <!-- HACKED OVERLAY -->
+  <div id="overlay">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span>⚠ ALERTA DE SEGURIDAD — DEMOSTRACIÓN EDUCATIVA · UCATEBA</span>
+      </div>
+
+      <div class="skull">💀</div>
+      <div class="hacked-title">ACABAS DE SER HACKEADO</div>
+      <div style="margin-bottom:16px;">
+        <span style="color:#888; font-size:11px; letter-spacing:0.1em;">USUARIO COMPROMETIDO:</span><br>
+        <span id="displayUser" style="color:#00ff50; font-size:28px; font-weight:700; letter-spacing:0.08em; text-shadow:0 0 20px rgba(0,255,80,0.7);"></span>
+      </div>
+      <p class="hacked-sub">
+        Si esto fuera un ataque real, tu usuario, contraseña<br>
+        y acceso al sistema UCATEBA ya estarían comprometidos.
+      </p>
+
+      <div class="log">
+        <div><span class="ok">[✔]</span> Objetivo identificado: empleado UCATEBA</div>
+        <div><span class="ok">[✔]</span> Formulario institucional completado con confianza</div>
+        <div><span class="warn">[!]</span> Usuario capturado: <span id="logUser" style="color:#ffcc00;"></span></div>
+        <div><span class="warn">[!]</span> Contraseña exfiltrada: ••••••••••••</div>
+        <div><span class="ok">[✔]</span> Payload ejecutado con éxito · 0 sospechas</div>
+      </div>
+
+      <button class="reveal-btn" onclick="showLesson()">
+        &gt; VER LA LECCIÓN DE SEGURIDAD
+      </button>
+
+      <div id="lesson">
+        <h3>¿POR QUÉ FUNCIONÓ ESTE ENGAÑO?</h3>
+        <ul>
+          <li>El diseño y logo de UCATEBA generaron confianza institucional inmediata</li>
+          <li>El lenguaje oficial ("PSI-2024", "política institucional") redujo el cuestionamiento</li>
+          <li>El campo de usuario y contraseña pareció legítimo y necesario</li>
+          <li>Los íconos de seguridad (🔒, TLS, AES) son señales de confianza falsas</li>
+          <li><strong style="color:#00ff50;">Regla de oro:</strong> Ningún sistema legítimo pedirá tu contraseña para "verificarla"</li>
+          <li>Siempre verifica la URL real antes de ingresar credenciales</li>
+        </ul>
+
+        <div style="margin-top:22px; border-top:1px solid rgba(0,255,80,0.2); padding-top:18px;">
+          <h3>💬 REFLEXIÓN PARA EL PERSONAL</h3>
+          <p style="color:#00dd44; font-size:12px; line-height:2;">
+            Lo que acaba de ocurrir no se trató de tecnología avanzada.<br>
+            No hubo virus, no hubo código malicioso.<br>
+            Solo hubo <strong style="color:#00ff50;">un diseño familiar y un botón tentador.</strong>
+          </p>
+          <p style="color:#00cc40; font-size:11.5px; line-height:1.9; margin-top:14px;">
+            El mayor riesgo de seguridad en cualquier institución no es un software —
+            <strong style="color:#ffcc00;">somos nosotros mismos</strong> cuando actuamos por inercia,
+            por confianza ciega, o por no tomarnos un segundo para preguntar.
+          </p>
+          <p style="color:#00ff50; font-size:14px; text-align:center; margin:18px 0; letter-spacing:0.04em; text-shadow:0 0 10px rgba(0,255,80,0.4);">
+            "¿Realmente debería hacer clic aquí?"
+          </p>
+          <p style="color:#00cc40; font-size:11.5px; line-height:2;">
+            Antes de ingresar sus credenciales, el personal debe preguntarse:<br>
+            &nbsp;› ¿Recibí alguna notificación oficial de este proceso?<br>
+            &nbsp;› ¿La URL en el navegador es realmente la de UCATEBA?<br>
+            &nbsp;› ¿TI me informó sobre este requerimiento?<br>
+            &nbsp;› ¿Tiene sentido que el sistema me pida esto ahora?
+          </p>
+          <p style="color:#ffcc00; font-size:11.5px; margin-top:16px; line-height:1.9; border:1px solid rgba(255,204,0,0.25); padding:12px 14px; background:rgba(255,204,0,0.04);">
+            ⚠&nbsp; En caso de duda, <strong>no haga clic.</strong> Comuníquese directamente
+            con la Dirección de TI antes de ingresar cualquier dato sensible.<br>
+            Un segundo de pausa puede evitar semanas de consecuencias.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function tick() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleDateString('es-DO', { weekday:'short', day:'2-digit', month:'short', year:'numeric' }) +
+        ' · ' + now.toLocaleTimeString('es-DO', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+    tick(); setInterval(tick, 1000);
+
+    function triggerHack() {
+      const u = document.getElementById('inputUsuario');
+      const p = document.getElementById('inputPassword');
+      const err = document.getElementById('errorMsg');
+      u.classList.remove('error');
+      p.classList.remove('error');
+      if (!u.value.trim() || !p.value.trim()) {
+        err.style.display = 'block';
+        if (!u.value.trim()) u.classList.add('error');
+        if (!p.value.trim()) p.classList.add('error');
+        return;
+      }
+      err.style.display = 'none';
+      document.getElementById('displayUser').textContent = u.value.trim();
+      document.getElementById('logUser').textContent = u.value.trim();
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function showLesson() {
+      document.getElementById('lesson').classList.add('show');
+      document.querySelector('.reveal-btn').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
